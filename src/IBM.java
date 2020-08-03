@@ -2,9 +2,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 
 
 public class IBM {
@@ -115,8 +113,8 @@ public class IBM {
                 HashMap<Integer, Integer> srcIds = new HashMap<>();
                 for (String srcWord : srcWords) {
                     int srcID = unk;
-                    if (srcWord2ID.containsKey(srcID))
-                        srcWord2ID.get(srcWord);
+                    if (srcWord2ID.containsKey(srcWord))
+                        srcID = srcWord2ID.get(srcWord);
                     if (!srcIds.containsKey(srcID))
                         srcIds.put(srcID, 1);
                     else
@@ -204,6 +202,43 @@ public class IBM {
             System.out.println("Wrote " + numWritten + " non-zero probabilities");
             probWriter.close();
         }
+
+        System.out.println("Writing top score elements");
+        BufferedWriter probWriter = new BufferedWriter(new FileWriter(outputPath+".best"));
+
+        for (int s = 0; s < srcWordsList.size(); s++) {
+            String srcWord = srcWordsList.get(s);
+            HashMap<Integer, Float> tProb = translationProb[s];
+
+            TreeMap<Float, HashSet<Integer>> sortedMap = new TreeMap<>();
+
+            for (int t : tProb.keySet()) {
+                float prob = -tProb.get(t);
+                if(!sortedMap.containsKey(prob)){
+                    sortedMap.put(prob, new HashSet<>());
+                }
+                sortedMap.get(prob).add(t);
+            }
+            int used = 0;
+            StringBuilder output = new StringBuilder();
+            output.append(srcWord);
+
+            for(float prob: sortedMap.keySet()) {
+                for(int t:sortedMap.get(prob)){
+                    String dstWord = dstWordsList.get(t);
+                    output.append("\t");
+                    output.append(dstWord);
+                    output.append("\t");
+                    output.append((-prob));
+                }
+                used ++;
+                if(used>=5)
+                    break;
+            }
+            output.append("\n");
+            probWriter.write(output.toString());
+        }
+        probWriter.close();
 
     }
 }
