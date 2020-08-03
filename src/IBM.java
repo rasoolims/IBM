@@ -63,13 +63,19 @@ public class IBM {
         srcReader.close();
         dstReader.close();
         System.out.println("\nConstructed parallel data of size " + lineNum);
+        System.out.println("Constructed lexicons " + srcWordsList.size() + " " + dstWordsList.size());
 
-        HashMap<Integer, HashMap<Integer, Double>> translationProb = new HashMap<>();
+        HashMap<Integer, Double>[] translationProb = new HashMap[srcWordsList.size()];
         double initVal = 1.0 / srcWordsList.size();
 
-        HashMap<Integer, HashMap<Integer, Double>> Q = new HashMap<>();
+        HashMap<Integer, Double>[] Q = new HashMap[srcWordsList.size()];
         double[] C = new double[srcWordsList.size()];
         Arrays.fill(C, 0.0);
+
+        for (int s = 0; s < srcWordsList.size(); s++) {
+            translationProb[s] = new HashMap<>();
+            Q[s] = new HashMap<>();
+        }
 
 
         for (int iter = 0; iter < ibmIterations; iter++) {
@@ -100,13 +106,8 @@ public class IBM {
                 }
 
                 for (int srcID : srcIds.keySet()) {
-                    if (!translationProb.containsKey(srcID)) {
-                        translationProb.put(srcID, new HashMap<>());
-                        Q.put(srcID, new HashMap<>());
-                    }
-
-                    HashMap<Integer, Double> tProb = translationProb.get(srcID);
-                    HashMap<Integer, Double> qProb = Q.get(srcID);
+                    HashMap<Integer, Double> tProb = translationProb[srcID];
+                    HashMap<Integer, Double> qProb = Q[srcID];
 
                     int srcCount = srcIds.get(srcID);
                     double denom = 0.0;
@@ -137,9 +138,9 @@ public class IBM {
             System.out.println("\nRenewing probabilities");
 
             // Renew translation probabilities.
-            for (int s : Q.keySet()) {
-                HashMap<Integer, Double> qProb = Q.get(s);
-                HashMap<Integer, Double> tProb = translationProb.get(s);
+            for (int s = 0; s < srcWordsList.size(); s++) {
+                HashMap<Integer, Double> qProb = Q[s];
+                HashMap<Integer, Double> tProb = translationProb[s];
                 double denom = C[s];
                 for (int t : qProb.keySet()) {
                     double prob = qProb.get(t) / denom;
@@ -151,18 +152,19 @@ public class IBM {
 
             // Reset Q and C
             Arrays.fill(C, 0.0);
-            for (int s : Q.keySet()) {
-                for (int t : Q.get(s).keySet()) {
-                    Q.get(s).put(t, 0.0);
+            for (int s = 0; s < srcWordsList.size(); s++) {
+                HashMap<Integer, Double> qProb = Q[s];
+                for (int t : qProb.keySet()) {
+                    qProb.put(t, 0.0);
                 }
             }
 
             System.out.println("Writing non-zero probabilities");
             BufferedWriter probWriter = new BufferedWriter(new FileWriter(outputPath));
             int numWritten = 0;
-            for (int s : translationProb.keySet()) {
+            for (int s = 0; s < srcWordsList.size(); s++) {
                 String srcWord = srcWordsList.get(s);
-                HashMap<Integer, Double> tProb = translationProb.get(s);
+                HashMap<Integer, Double> tProb = translationProb[s];
                 for (int t : tProb.keySet()) {
                     double prob = tProb.get(t);
                     if (prob > 0) {
