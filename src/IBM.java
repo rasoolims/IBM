@@ -6,15 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-class Pair<T1, T2> {
-    public T1 first;
-    public T2 second;
-
-    public Pair(T1 first, T2 second) {
-        this.first = first;
-        this.second = second;
-    }
-}
 
 public class IBM {
     public static void main(String[] args) throws Exception {
@@ -37,6 +28,7 @@ public class IBM {
 
         System.out.println("Constructing parallel data...");
         int lineNum = 0;
+
         while ((srcLine = srcReader.readLine()) != null && (dstLine = dstReader.readLine()) != null) {
             String[] srcWords = srcLine.trim().toLowerCase().split(" ");
             String[] dstWords = dstLine.trim().toLowerCase().split(" ");
