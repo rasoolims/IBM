@@ -55,7 +55,6 @@ public class IBM {
                     dstWordsList.add(word);
                     dstWord2ID.put(word, dstWord2ID.size());
                 }
-                int id = dstWord2ID.get(word);
             }
             lineNum++;
             if (lineNum % 10000 == 0)
