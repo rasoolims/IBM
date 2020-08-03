@@ -18,10 +18,18 @@ public class IBM {
         ArrayList<String> srcWordsList = new ArrayList<>();
         srcWordsList.add("_null_");
         int _null_ = 0;
+        String UNK = "<unk>";
+        int unk = 1;
         srcWord2ID.put("_null_", _null_);
+        srcWord2ID.put(UNK, unk);
+        srcWordsList.add(UNK);
 
         HashMap<String, Integer> dstWord2ID = new HashMap<>();
         ArrayList<String> dstWordsList = new ArrayList<>();
+        srcWord2ID.put(UNK, unk);
+        dstWordsList.add(UNK);
+
+        srcWord2ID.put(UNK, unk);
 
         String srcLine = null;
         String dstLine = null;
@@ -29,23 +37,29 @@ public class IBM {
         System.out.println("Constructing parallel data...");
         int lineNum = 0;
 
+        HashMap<String, Integer> srcWordCount = new HashMap<>();
+        HashMap<String, Integer> dstWordCount = new HashMap<>();
+
+
         while ((srcLine = srcReader.readLine()) != null && (dstLine = dstReader.readLine()) != null) {
             String[] srcWords = srcLine.trim().toLowerCase().split(" ");
             String[] dstWords = dstLine.trim().toLowerCase().split(" ");
 
             for (int i = 0; i < srcWords.length; i++) {
                 String word = srcWords[i];
-                if (!srcWord2ID.containsKey(word)) {
-                    srcWordsList.add(word);
-                    srcWord2ID.put(word, srcWord2ID.size());
+                if (!srcWordCount.containsKey(word)) {
+                    srcWordCount.put(word, 1);
+                } else {
+                    srcWordCount.put(word, srcWordCount.get(word) + 1);
                 }
             }
 
             for (int i = 0; i < dstWords.length; i++) {
                 String word = dstWords[i];
-                if (!dstWord2ID.containsKey(word)) {
-                    dstWordsList.add(word);
-                    dstWord2ID.put(word, dstWord2ID.size());
+                if (!dstWordCount.containsKey(word)) {
+                    dstWordCount.put(word, 1);
+                } else {
+                    dstWordCount.put(word, dstWordCount.get(word) + 1);
                 }
             }
             lineNum++;
@@ -54,6 +68,25 @@ public class IBM {
         }
         srcReader.close();
         dstReader.close();
+
+
+        for (String word : srcWordCount.keySet()) {
+            if (srcWordCount.get(word) >= 5) {
+                srcWord2ID.put(word, srcWord2ID.size());
+                srcWordsList.add(word);
+            }
+        }
+
+        for (String word : dstWordCount.keySet()) {
+            if (dstWordCount.get(word) >= 30) {
+                dstWord2ID.put(word, dstWord2ID.size());
+                dstWordsList.add(word);
+            }
+        }
+        srcWordCount = null;
+        dstWordCount = null;
+
+
         System.out.println("\nConstructed parallel data of size " + lineNum);
         System.out.println("Constructed lexicons " + srcWordsList.size() + " " + dstWordsList.size());
 
@@ -81,7 +114,9 @@ public class IBM {
 
                 HashMap<Integer, Integer> srcIds = new HashMap<>();
                 for (String srcWord : srcWords) {
-                    int srcID = srcWord2ID.get(srcWord);
+                    int srcID = unk;
+                    if (srcWord2ID.containsKey(srcID))
+                        srcWord2ID.get(srcWord);
                     if (!srcIds.containsKey(srcID))
                         srcIds.put(srcID, 1);
                     else
@@ -90,7 +125,9 @@ public class IBM {
 
                 HashMap<Integer, Integer> dstIds = new HashMap<>();
                 for (String dstWord : dstWords) {
-                    int dstID = dstWord2ID.get(dstWord);
+                    int dstID = unk;
+                    if (dstWord2ID.containsKey(dstWord))
+                        dstID = dstWord2ID.get(dstWord);
                     if (!dstIds.containsKey(dstID))
                         dstIds.put(dstID, 1);
                     else
