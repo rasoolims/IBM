@@ -125,7 +125,10 @@ public class IBM {
                     dstIds.put(dstID, dstIds.get(dstID) + 1);
             }
             parallelData.add(new Pair<>(srcIds, dstIds));
+            if (parallelData.size() % 10000 == 0)
+                System.out.print(parallelData.size() + "\r");
         }
+        System.out.println("\nConstructed parallel data of size " + lineNum);
 
         HashMap<Integer, Float>[] translationProb = new HashMap[srcWordsList.size()];
         float initVal = 1.0f / srcWordsList.size();
@@ -138,7 +141,6 @@ public class IBM {
             translationProb[s] = new HashMap<>();
             Q[s] = new HashMap<>();
         }
-        System.out.println("\nConstructed parallel data of size " + lineNum);
 
         for (int iter = 0; iter < ibmIterations; iter++) {
             System.out.println("IBM Iter: " + (iter + 1));
