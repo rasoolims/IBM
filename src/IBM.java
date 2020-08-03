@@ -98,7 +98,8 @@ public class IBM {
 
         srcReader = new BufferedReader(new FileReader(args[0]));
         dstReader = new BufferedReader(new FileReader(args[1]));
-        ArrayList<Pair<HashMap<Integer, Integer>, HashMap<Integer, Integer>>> parallelData = new ArrayList<>();
+        Pair<HashMap<Integer, Integer>, HashMap<Integer, Integer>>[] parallelData = new Pair[lineNum];
+        int pNum = 0;
         while ((srcLine = srcReader.readLine()) != null && (dstLine = dstReader.readLine()) != null) {
             String[] srcWords = ("_null_ " + srcLine.trim().toLowerCase()).split(" ");
             String[] dstWords = dstLine.trim().toLowerCase().split(" ");
@@ -124,9 +125,9 @@ public class IBM {
                 else
                     dstIds.put(dstID, dstIds.get(dstID) + 1);
             }
-            parallelData.add(new Pair<>(srcIds, dstIds));
-            if (parallelData.size() % 10000 == 0)
-                System.out.print(parallelData.size() + "\r");
+            parallelData[pNum]=new Pair<>(srcIds, dstIds);
+            if (parallelData.length % 10000 == 0)
+                System.out.print(parallelData.length + "\r");
         }
         System.out.println("\nConstructed parallel data of size " + lineNum);
 
@@ -146,9 +147,9 @@ public class IBM {
             System.out.println("IBM Iter: " + (iter + 1));
             srcReader = new BufferedReader(new FileReader(args[0]));
             dstReader = new BufferedReader(new FileReader(args[1]));
-            for (int pNum = 0; pNum < parallelData.size(); pNum++) {
-                HashMap<Integer, Integer> srcIds = parallelData.get(pNum).first;
-                HashMap<Integer, Integer> dstIds = parallelData.get(pNum).second;
+            for (pNum = 0; pNum < parallelData.length; pNum++) {
+                HashMap<Integer, Integer> srcIds = parallelData[pNum].first;
+                HashMap<Integer, Integer> dstIds = parallelData[pNum].second;
 
                 for (int srcID : srcIds.keySet()) {
                     HashMap<Integer, Float> tProb = translationProb[srcID];
@@ -173,7 +174,6 @@ public class IBM {
                         C[srcID] += prob;
                     }
                 }
-                pNum++;
                 if (pNum % 1000 == 0)
                     System.out.print(pNum + "/" + lineNum + "\r");
             }
