@@ -125,9 +125,9 @@ public class IBM {
                 else
                     dstIds.put(dstID, dstIds.get(dstID) + 1);
             }
-            parallelData[pNum]=new Pair<>(srcIds, dstIds);
-            if (parallelData.length % 10000 == 0)
-                System.out.print(parallelData.length + "\r");
+            parallelData[pNum] = new Pair<>(srcIds, dstIds);
+            if (pNum % 10000 == 0)
+                System.out.print(pNum + "\r");
         }
         System.out.println("\nConstructed parallel data of size " + lineNum);
 
