@@ -4,6 +4,15 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.*;
 
+class Pair<T1, T2> {
+    public T1 first;
+    public T2 second;
+
+    public Pair(T1 first, T2 second) {
+        this.first = first;
+        this.second = second;
+    }
+}
 
 public class IBM {
     public static void main(String[] args) throws Exception {
@@ -85,8 +94,38 @@ public class IBM {
         dstWordCount = null;
         System.gc();
 
-        System.out.println("\nConstructed parallel data of size " + lineNum);
         System.out.println("Constructed lexicons " + srcWordsList.size() + " " + dstWordsList.size());
+
+        srcReader = new BufferedReader(new FileReader(args[0]));
+        dstReader = new BufferedReader(new FileReader(args[1]));
+        ArrayList<Pair<HashMap<Integer, Integer>, HashMap<Integer, Integer>>> parallelData = new ArrayList<>();
+        while ((srcLine = srcReader.readLine()) != null && (dstLine = dstReader.readLine()) != null) {
+            String[] srcWords = ("_null_ " + srcLine.trim().toLowerCase()).split(" ");
+            String[] dstWords = dstLine.trim().toLowerCase().split(" ");
+
+            HashMap<Integer, Integer> srcIds = new HashMap<>();
+            for (String srcWord : srcWords) {
+                int srcID = unk;
+                if (srcWord2ID.containsKey(srcWord))
+                    srcID = srcWord2ID.get(srcWord);
+                if (!srcIds.containsKey(srcID))
+                    srcIds.put(srcID, 1);
+                else
+                    srcIds.put(srcID, srcIds.get(srcID) + 1);
+            }
+
+            HashMap<Integer, Integer> dstIds = new HashMap<>();
+            for (String dstWord : dstWords) {
+                int dstID = unk;
+                if (dstWord2ID.containsKey(dstWord))
+                    dstID = dstWord2ID.get(dstWord);
+                if (!dstIds.containsKey(dstID))
+                    dstIds.put(dstID, 1);
+                else
+                    dstIds.put(dstID, dstIds.get(dstID) + 1);
+            }
+            parallelData.add(new Pair<>(srcIds, dstIds));
+        }
 
         HashMap<Integer, Float>[] translationProb = new HashMap[srcWordsList.size()];
         float initVal = 1.0f / srcWordsList.size();
@@ -99,38 +138,15 @@ public class IBM {
             translationProb[s] = new HashMap<>();
             Q[s] = new HashMap<>();
         }
-
+        System.out.println("\nConstructed parallel data of size " + lineNum);
 
         for (int iter = 0; iter < ibmIterations; iter++) {
             System.out.println("IBM Iter: " + (iter + 1));
             srcReader = new BufferedReader(new FileReader(args[0]));
             dstReader = new BufferedReader(new FileReader(args[1]));
-            int pNum = 0;
-            while ((srcLine = srcReader.readLine()) != null && (dstLine = dstReader.readLine()) != null) {
-                String[] srcWords = ("_null_ " + srcLine.trim().toLowerCase()).split(" ");
-                String[] dstWords = dstLine.trim().toLowerCase().split(" ");
-
-                HashMap<Integer, Integer> srcIds = new HashMap<>();
-                for (String srcWord : srcWords) {
-                    int srcID = unk;
-                    if (srcWord2ID.containsKey(srcWord))
-                        srcID = srcWord2ID.get(srcWord);
-                    if (!srcIds.containsKey(srcID))
-                        srcIds.put(srcID, 1);
-                    else
-                        srcIds.put(srcID, srcIds.get(srcID) + 1);
-                }
-
-                HashMap<Integer, Integer> dstIds = new HashMap<>();
-                for (String dstWord : dstWords) {
-                    int dstID = unk;
-                    if (dstWord2ID.containsKey(dstWord))
-                        dstID = dstWord2ID.get(dstWord);
-                    if (!dstIds.containsKey(dstID))
-                        dstIds.put(dstID, 1);
-                    else
-                        dstIds.put(dstID, dstIds.get(dstID) + 1);
-                }
+            for (int pNum = 0; pNum < parallelData.size(); pNum++) {
+                HashMap<Integer, Integer> srcIds = parallelData.get(pNum).first;
+                HashMap<Integer, Integer> dstIds = parallelData.get(pNum).second;
 
                 for (int srcID : srcIds.keySet()) {
                     HashMap<Integer, Float> tProb = translationProb[srcID];
