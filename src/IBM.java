@@ -32,7 +32,6 @@ public class IBM {
         HashMap<String, Integer> dstWord2ID = new HashMap<>();
         ArrayList<String> dstWordsList = new ArrayList<>();
 
-        ArrayList<Pair<HashMap<Integer, Integer>, HashMap<Integer, Integer>>> parallelData = new ArrayList<>();
         String srcLine = null;
         String dstLine = null;
 
@@ -42,21 +41,11 @@ public class IBM {
             String[] srcWords = srcLine.trim().toLowerCase().split(" ");
             String[] dstWords = dstLine.trim().toLowerCase().split(" ");
 
-            HashMap<Integer, Integer> srcIds = new HashMap<>();
-            srcIds.put(_null_, 1);
-            HashMap<Integer, Integer> dstIds = new HashMap<>();
-
             for (int i = 0; i < srcWords.length; i++) {
                 String word = srcWords[i];
                 if (!srcWord2ID.containsKey(word)) {
                     srcWordsList.add(word);
                     srcWord2ID.put(word, srcWord2ID.size());
-                }
-                int id = srcWord2ID.get(word);
-                if (srcIds.containsKey(id)) {
-                    srcIds.put(id, srcIds.get(id) + 1);
-                } else {
-                    srcIds.put(id, 1);
                 }
             }
 
@@ -67,21 +56,14 @@ public class IBM {
                     dstWord2ID.put(word, dstWord2ID.size());
                 }
                 int id = dstWord2ID.get(word);
-
-                if (dstIds.containsKey(id)) {
-                    dstIds.put(id, dstIds.get(id) + 1);
-                } else {
-                    dstIds.put(id, 1);
-                }
             }
-            parallelData.add(new Pair<>(srcIds, dstIds));
             lineNum++;
             if (lineNum % 10000 == 0)
                 System.out.print(lineNum + "\r");
         }
         srcReader.close();
         dstReader.close();
-        System.out.println("\nConstructed parallel data of size " + parallelData.size());
+        System.out.println("\nConstructed parallel data of size " + lineNum);
 
         HashMap<Integer, HashMap<Integer, Double>> translationProb = new HashMap<>();
         double initVal = 1.0 / srcWordsList.size();
@@ -93,12 +75,30 @@ public class IBM {
 
         for (int iter = 0; iter < ibmIterations; iter++) {
             System.out.println("IBM Iter: " + (iter + 1));
+            srcReader = new BufferedReader(new FileReader(args[0]));
+            dstReader = new BufferedReader(new FileReader(args[1]));
+            int pNum = 0;
+            while ((srcLine = srcReader.readLine()) != null && (dstLine = dstReader.readLine()) != null) {
+                String[] srcWords = ("_null_ " + srcLine.trim().toLowerCase()).split(" ");
+                String[] dstWords = dstLine.trim().toLowerCase().split(" ");
 
-            for (int p = 0; p < parallelData.size(); p++) {
-                Pair<HashMap<Integer, Integer>, HashMap<Integer, Integer>> data = parallelData.get(p);
+                HashMap<Integer, Integer> srcIds = new HashMap<>();
+                for (String srcWord : srcWords) {
+                    int srcID = srcWord2ID.get(srcWord);
+                    if (!srcIds.containsKey(srcID))
+                        srcIds.put(srcID, 1);
+                    else
+                        srcIds.put(srcID, srcIds.get(srcID) + 1);
+                }
 
-                HashMap<Integer, Integer> srcIds = data.first;
-                HashMap<Integer, Integer> dstIds = data.second;
+                HashMap<Integer, Integer> dstIds = new HashMap<>();
+                for (String dstWord : dstWords) {
+                    int dstID = dstWord2ID.get(dstWord);
+                    if (!dstIds.containsKey(dstID))
+                        dstIds.put(dstID, 1);
+                    else
+                        dstIds.put(dstID, dstIds.get(dstID) + 1);
+                }
 
                 for (int srcID : srcIds.keySet()) {
                     if (!translationProb.containsKey(srcID)) {
@@ -128,10 +128,12 @@ public class IBM {
                         C[srcID] += prob;
                     }
                 }
-
-                if ((p + 1) % 1000 == 0)
-                    System.out.print((p + 1) + "/" + parallelData.size() + "\r");
+                pNum++;
+                if (pNum % 1000 == 0)
+                    System.out.print(pNum + "/" + lineNum + "\r");
             }
+            srcReader.close();
+            dstReader.close();
 
             System.out.println("\nRenewing probabilities");
 
