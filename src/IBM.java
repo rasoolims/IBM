@@ -57,12 +57,12 @@ public class IBM {
         System.out.println("\nConstructed parallel data of size " + lineNum);
         System.out.println("Constructed lexicons " + srcWordsList.size() + " " + dstWordsList.size());
 
-        HashMap<Integer, Double>[] translationProb = new HashMap[srcWordsList.size()];
-        double initVal = 1.0 / srcWordsList.size();
+        HashMap<Integer, Float>[] translationProb = new HashMap[srcWordsList.size()];
+        float initVal = 1.0f / srcWordsList.size();
 
-        HashMap<Integer, Double>[] Q = new HashMap[srcWordsList.size()];
-        double[] C = new double[srcWordsList.size()];
-        Arrays.fill(C, 0.0);
+        HashMap<Integer, Float>[] Q = new HashMap[srcWordsList.size()];
+        float[] C = new float[srcWordsList.size()];
+        Arrays.fill(C, 0.0f);
 
         for (int s = 0; s < srcWordsList.size(); s++) {
             translationProb[s] = new HashMap<>();
@@ -98,24 +98,24 @@ public class IBM {
                 }
 
                 for (int srcID : srcIds.keySet()) {
-                    HashMap<Integer, Double> tProb = translationProb[srcID];
-                    HashMap<Integer, Double> qProb = Q[srcID];
+                    HashMap<Integer, Float> tProb = translationProb[srcID];
+                    HashMap<Integer, Float> qProb = Q[srcID];
 
                     int srcCount = srcIds.get(srcID);
-                    double denom = 0.0;
+                    float denom = 0.0f;
                     for (int dstId : dstIds.keySet()) {
                         if (!tProb.containsKey(dstId)) {
                             tProb.put(dstId, initVal);
-                            qProb.put(dstId, 0.0);
+                            qProb.put(dstId, 0.0f);
                         }
 
                         int dstCount = dstIds.get(dstId);
-                        double prob = srcCount * dstCount * tProb.get(dstId);
+                        float prob = srcCount * dstCount * tProb.get(dstId);
                         denom += prob;
                     }
                     for (int dstId : dstIds.keySet()) {
                         int dstCount = dstIds.get(dstId);
-                        double prob = (srcCount * dstCount * tProb.get(dstId)) / denom;
+                        float prob = (srcCount * dstCount * tProb.get(dstId)) / denom;
                         qProb.put(dstId, qProb.get(dstId) + prob);
                         C[srcID] += prob;
                     }
@@ -131,23 +131,21 @@ public class IBM {
 
             // Renew translation probabilities.
             for (int s = 0; s < srcWordsList.size(); s++) {
-                HashMap<Integer, Double> qProb = Q[s];
-                HashMap<Integer, Double> tProb = translationProb[s];
-                double denom = C[s];
+                HashMap<Integer, Float> qProb = Q[s];
+                HashMap<Integer, Float> tProb = translationProb[s];
+                float denom = C[s];
                 for (int t : qProb.keySet()) {
-                    double prob = qProb.get(t) / denom;
+                    float prob = qProb.get(t) / denom;
                     tProb.put(t, prob);
-
                 }
             }
 
-
             // Reset Q and C
-            Arrays.fill(C, 0.0);
+            Arrays.fill(C, 0.0f);
             for (int s = 0; s < srcWordsList.size(); s++) {
-                HashMap<Integer, Double> qProb = Q[s];
+                HashMap<Integer, Float> qProb = Q[s];
                 for (int t : qProb.keySet()) {
-                    qProb.put(t, 0.0);
+                    qProb.put(t, 0.0f);
                 }
             }
 
@@ -156,9 +154,9 @@ public class IBM {
             int numWritten = 0;
             for (int s = 0; s < srcWordsList.size(); s++) {
                 String srcWord = srcWordsList.get(s);
-                HashMap<Integer, Double> tProb = translationProb[s];
+                HashMap<Integer, Float> tProb = translationProb[s];
                 for (int t : tProb.keySet()) {
-                    double prob = tProb.get(t);
+                    float prob = tProb.get(t);
                     if (prob > 0) {
                         String dstWord = dstWordsList.get(t);
                         probWriter.write(srcWord + "\t" + dstWord + "\t" + prob + "\n");
@@ -167,7 +165,6 @@ public class IBM {
                 }
             }
             System.out.println("Wrote " + numWritten + " non-zero probabilities");
-
             probWriter.close();
         }
 
