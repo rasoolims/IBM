@@ -130,7 +130,7 @@ public class IBM {
                 }
 
                 if ((p + 1) % 1000 == 0)
-                    System.out.print((p + 1) + "\r");
+                    System.out.print((p + 1) + "/" + parallelData.size() + "\r");
             }
 
             System.out.println("\nRenewing probabilities");
