@@ -83,7 +83,7 @@ public class IBM {
         }
         srcWordCount = null;
         dstWordCount = null;
-
+        System.gc();
 
         System.out.println("\nConstructed parallel data of size " + lineNum);
         System.out.println("Constructed lexicons " + srcWordsList.size() + " " + dstWordsList.size());
