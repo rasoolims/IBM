@@ -126,6 +126,7 @@ public class IBM {
                     dstIds.put(dstID, dstIds.get(dstID) + 1);
             }
             parallelData[pNum] = new Pair<>(srcIds, dstIds);
+            pNum++;
             if (pNum % 10000 == 0)
                 System.out.print(pNum + "\r");
         }
