@@ -78,14 +78,14 @@ public class IBM {
 
 
         for (String word : srcWordCount.keySet()) {
-            if (srcWordCount.get(word) >= 5) {
+            if (srcWordCount.get(word) >= 10) {
                 srcWord2ID.put(word, srcWord2ID.size());
                 srcWordsList.add(word);
             }
         }
 
         for (String word : dstWordCount.keySet()) {
-            if (dstWordCount.get(word) >= 30) {
+            if (dstWordCount.get(word) >= 50) {
                 dstWord2ID.put(word, dstWord2ID.size());
                 dstWordsList.add(word);
             }
