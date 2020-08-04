@@ -202,7 +202,7 @@ public class IBM {
                     qProb.put(t, 0.0f);
                 }
             }
-
+            /*
             System.out.println("Writing non-zero probabilities");
             BufferedWriter probWriter = new BufferedWriter(new FileWriter(outputPath));
             int numWritten = 0;
@@ -220,6 +220,7 @@ public class IBM {
             }
             System.out.println("Wrote " + numWritten + " non-zero probabilities");
             probWriter.close();
+             */
         }
 
         System.out.println("Writing top score elements");
