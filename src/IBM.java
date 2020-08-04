@@ -152,26 +152,22 @@ public class IBM {
                 HashMap<Integer, Integer> srcIds = parallelData[pNum].first;
                 HashMap<Integer, Integer> dstIds = parallelData[pNum].second;
 
-                for (int srcID : srcIds.keySet()) {
-                    HashMap<Integer, Float> tProb = translationProb[srcID];
-                    HashMap<Integer, Float> qProb = Q[srcID];
-
-                    int srcCount = srcIds.get(srcID);
+                for (int dstId : dstIds.keySet()) {
                     float denom = 0.0f;
-                    for (int dstId : dstIds.keySet()) {
-                        if (!tProb.containsKey(dstId)) {
-                            tProb.put(dstId, initVal);
-                            qProb.put(dstId, 0.0f);
+                    int dstCount = dstIds.get(dstId);
+                    for (int srcID : srcIds.keySet()) {
+                        int srcCount = srcIds.get(srcID);
+                        if (!translationProb[srcID].containsKey(dstId)) {
+                            translationProb[srcID].put(dstId, initVal);
+                            Q[srcID].put(dstId, 0.0f);
                         }
-
-                        int dstCount = dstIds.get(dstId);
-                        float prob = srcCount * dstCount * tProb.get(dstId);
+                        float prob = srcCount * dstCount * translationProb[srcID].get(dstId);
                         denom += prob;
                     }
-                    for (int dstId : dstIds.keySet()) {
-                        int dstCount = dstIds.get(dstId);
-                        float prob = (srcCount * dstCount * tProb.get(dstId)) / denom;
-                        qProb.put(dstId, qProb.get(dstId) + prob);
+                    for (int srcID : srcIds.keySet()) {
+                        int srcCount = srcIds.get(srcID);
+                        float prob = (srcCount * dstCount * translationProb[srcID].get(dstId)) / denom;
+                        Q[srcID].put(dstId, Q[srcID].get(dstId) + prob);
                         C[srcID] += prob;
                     }
                 }
