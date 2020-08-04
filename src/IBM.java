@@ -25,10 +25,18 @@ public class IBM {
         ArrayList<String> srcWordsList = new ArrayList<>();
         srcWordsList.add("_null_");
         int _null_ = 0;
+        String UNK = "<unk>";
+        int unk = 1;
         srcWord2ID.put("_null_", _null_);
+        srcWord2ID.put(UNK, unk);
+        srcWordsList.add(UNK);
 
         HashMap<String, Integer> dstWord2ID = new HashMap<>();
         ArrayList<String> dstWordsList = new ArrayList<>();
+        srcWord2ID.put(UNK, unk);
+        dstWordsList.add(UNK);
+
+        srcWord2ID.put(UNK, unk);
 
         String srcLine = null;
         String dstLine = null;
@@ -98,24 +106,24 @@ public class IBM {
 
             HashMap<Integer, Integer> srcIds = new HashMap<>();
             for (String srcWord : srcWords) {
-                if (srcWord2ID.containsKey(srcWord)) {
-                    int srcID = srcWord2ID.get(srcWord);
-                    if (!srcIds.containsKey(srcID))
-                        srcIds.put(srcID, 1);
-                    else
-                        srcIds.put(srcID, srcIds.get(srcID) + 1);
-                }
+                int srcID = unk;
+                if (srcWord2ID.containsKey(srcWord))
+                    srcID = srcWord2ID.get(srcWord);
+                if (!srcIds.containsKey(srcID))
+                    srcIds.put(srcID, 1);
+                else
+                    srcIds.put(srcID, srcIds.get(srcID) + 1);
             }
 
             HashMap<Integer, Integer> dstIds = new HashMap<>();
             for (String dstWord : dstWords) {
-                if (dstWord2ID.containsKey(dstWord)) {
-                    int dstID = dstWord2ID.get(dstWord);
-                    if (!dstIds.containsKey(dstID))
-                        dstIds.put(dstID, 1);
-                    else
-                        dstIds.put(dstID, dstIds.get(dstID) + 1);
-                }
+                int dstID = unk;
+                if (dstWord2ID.containsKey(dstWord))
+                    dstID = dstWord2ID.get(dstWord);
+                if (!dstIds.containsKey(dstID))
+                    dstIds.put(dstID, 1);
+                else
+                    dstIds.put(dstID, dstIds.get(dstID) + 1);
             }
             parallelData[pNum] = new Pair<>(srcIds, dstIds);
             pNum++;
